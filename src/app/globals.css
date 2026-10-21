@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f6f7fb;
+  --surface: #ffffff;
+  --surface-muted: #f0f2f7;
+  --surface-hover: #f4f6fb;
+  --foreground: #16181f;
+  --muted: #667085;
+  --border: #e4e7ec;
+  --accent: #4d6bfe;
+  --accent-strong: #3a54e0;
+  --accent-soft: #eef1ff;
+  --success: #067647;
+  --success-soft: #ecfdf3;
+  --warning: #b54708;
+  --warning-soft: #fffaeb;
+}
+
+.dark {
+  --background: #0d0f15;
+  --surface: #141821;
+  --surface-muted: #1a1f2b;
+  --surface-hover: #1b2130;
+  --foreground: #eceef5;
+  --muted: #98a2b3;
+  --border: #262c3a;
+  --accent: #7b8cff;
+  --accent-strong: #93a1ff;
+  --accent-soft: #1b2242;
+  --success: #6ce9a6;
+  --success-soft: #10261b;
+  --warning: #fdb022;
+  --warning-soft: #2a1f0d;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-hover: var(--surface-hover);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --font-sans: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans SC", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background-color: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) opacity(0.7);
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply border-transparent bg-accent text-white hover:bg-accent-strong;
+  }
+
+  .btn-ghost {
+    @apply border-transparent bg-transparent text-muted hover:bg-surface-hover hover:text-foreground;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted/60 focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/20;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-muted transition-colors;
+  }
+
+  .chip-active {
+    @apply border-accent/30 bg-accent-soft text-accent;
+  }
+
+  .kbd {
+    @apply inline-flex min-w-5 items-center justify-center rounded-md border border-border bg-surface-muted px-1.5 py-0.5 font-mono text-[11px] text-muted;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-border bg-surface;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.25s ease-out both;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-slide-in {
+    animation: none;
+  }
+}
