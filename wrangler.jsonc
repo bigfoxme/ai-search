@@ -22,7 +22,7 @@
     "DEEPSEEK_BASE_URL": "https://api.deepseek.com",
     "RATE_LIMIT_PER_MINUTE": "20",
     "LOGIN_RATE_LIMIT_PER_MINUTE": "5",
-    "DAILY_SEARCH_LIMIT": "500",
+    "DAILY_SEARCH_LIMIT": "200",
     "SEARCH_CACHE_TTL_MS": "300000",
     "TRUST_CF_CONNECTING_IP": "1"
   }
