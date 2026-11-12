@@ -86,7 +86,18 @@ export function checkDailyLimit(limit: number): {
   return { ok: true, remaining: Math.max(0, limit - daily.count) };
 }
 
-export function getClientIp(headers: Headers): string {
+export function getClientIp(
+  headers: Headers,
+  trustCfConnectingIp = process.env.TRUST_CF_CONNECTING_IP === "1",
+): string {
+  // On Cloudflare Workers this header is written by the platform and cannot be
+  // forged. Elsewhere it is just a client-supplied header, so only trust it
+  // when explicitly enabled (see TRUST_CF_CONNECTING_IP).
+  if (trustCfConnectingIp) {
+    const cfIp = headers.get("cf-connecting-ip")?.trim();
+    if (cfIp) return cfIp;
+  }
+
   const forwarded = headers.get("x-forwarded-for");
   if (forwarded) {
     const first = forwarded.split(",")[0]?.trim();

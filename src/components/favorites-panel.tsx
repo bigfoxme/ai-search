@@ -1,8 +1,10 @@
 "use client";
 
 import { ExternalLink, Star, Trash2 } from "lucide-react";
+import type { BackupStatus } from "@/lib/backup";
 import { formatDate, hostnameOf, relativeTime } from "@/lib/format";
 import type { FavoriteItem } from "@/lib/storage";
+import { BackupControls } from "./backup-controls";
 import { Sheet } from "./ui/sheet";
 
 export function FavoritesPanel({
@@ -12,6 +14,9 @@ export function FavoritesPanel({
   hydrated,
   onRemove,
   onClear,
+  onExport,
+  onImport,
+  backupStatus,
 }: {
   open: boolean;
   onClose: () => void;
@@ -19,24 +24,35 @@ export function FavoritesPanel({
   hydrated: boolean;
   onRemove: (url: string) => void;
   onClear: () => void;
+  onExport: () => void;
+  onImport: (file: File) => void;
+  backupStatus: BackupStatus | null;
 }) {
   return (
     <Sheet
       open={open}
       onClose={onClose}
       title="我的收藏"
-      description="仅保存在当前浏览器的本地存储中"
+      description="仅保存在当前浏览器的本地存储中，可导出备份"
       footer={
-        items.length > 0 ? (
-          <button
-            type="button"
-            onClick={onClear}
-            className="btn btn-ghost h-8 w-full text-xs text-warning"
-          >
-            <Trash2 size={13} />
-            清空全部收藏
-          </button>
-        ) : null
+        <div className="space-y-2">
+          <BackupControls
+            onExport={onExport}
+            onImport={onImport}
+            disabled={!hydrated}
+            status={backupStatus}
+          />
+          {items.length > 0 ? (
+            <button
+              type="button"
+              onClick={onClear}
+              className="btn btn-ghost h-8 w-full text-xs text-warning"
+            >
+              <Trash2 size={13} />
+              清空全部收藏
+            </button>
+          ) : null}
+        </div>
       }
     >
       {!hydrated ? (

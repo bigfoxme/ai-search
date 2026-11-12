@@ -13,6 +13,13 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "@/hooks/use-hotkeys";
+import {
+  MAX_BACKUP_BYTES,
+  makeBackup,
+  mergeBackup,
+  parseBackup,
+  type BackupStatus,
+} from "@/lib/backup";
 import { cn } from "@/lib/cn";
 import { formatElapsed } from "@/lib/format";
 import {
@@ -96,6 +103,7 @@ export function SearchApp() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [backupStatus, setBackupStatus] = useState<BackupStatus | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const lastSignatureRef = useRef("");
@@ -349,6 +357,82 @@ export function SearchApp() {
   const clearFavorites = useCallback(() => {
     clearStoredFavorites();
     setFavorites([]);
+  }, []);
+
+  const exportBackup = useCallback(() => {
+    const backup = makeBackup(history, favorites);
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `deepseek-search-backup-${new Date()
+      .toISOString()
+      .slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    setBackupStatus({
+      kind: "ok",
+      text: `已导出 ${history.length} 条历史、${favorites.length} 条收藏。`,
+    });
+  }, [history, favorites]);
+
+  const importBackup = useCallback(async (file: File) => {
+    if (file.size > MAX_BACKUP_BYTES) {
+      setBackupStatus({
+        kind: "error",
+        text: "备份文件过大（上限 2 MB）。",
+      });
+      return;
+    }
+
+    let raw: unknown;
+    try {
+      raw = JSON.parse(await file.text());
+    } catch {
+      setBackupStatus({
+        kind: "error",
+        text: "无法读取：文件不是合法的 JSON。",
+      });
+      return;
+    }
+
+    const contents = parseBackup(raw);
+    if (!contents) {
+      setBackupStatus({
+        kind: "error",
+        text: "无法识别：这不是本应用导出的备份文件。",
+      });
+      return;
+    }
+    if (contents.history.length === 0 && contents.favorites.length === 0) {
+      setBackupStatus({
+        kind: "error",
+        text: "备份中没有可导入的有效记录。",
+      });
+      return;
+    }
+
+    const merged = mergeBackup(readHistory(), readFavorites(), contents);
+    if (merged.addedHistory === 0 && merged.addedFavorites === 0) {
+      setBackupStatus({
+        kind: "ok",
+        text: "备份中的记录已经存在，无需导入。",
+      });
+      return;
+    }
+
+    writeHistory(merged.history);
+    writeFavorites(merged.favorites);
+    setHistory(merged.history);
+    setFavorites(merged.favorites);
+    setBackupStatus({
+      kind: "ok",
+      text: `已导入 ${merged.addedHistory} 条历史、${merged.addedFavorites} 条收藏。`,
+    });
   }, []);
 
   const sortedResults = useMemo(
@@ -734,6 +818,9 @@ export function SearchApp() {
         onRun={runHistoryItem}
         onRemove={removeHistory}
         onClear={clearHistory}
+        onExport={exportBackup}
+        onImport={importBackup}
+        backupStatus={backupStatus}
       />
       <FavoritesPanel
         open={panel === "favorites"}
@@ -742,6 +829,9 @@ export function SearchApp() {
         hydrated={hydrated}
         onRemove={removeFavorite}
         onClear={clearFavorites}
+        onExport={exportBackup}
+        onImport={importBackup}
+        backupStatus={backupStatus}
       />
       <ShortcutsDialog
         open={panel === "shortcuts"}

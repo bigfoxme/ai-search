@@ -1,9 +1,11 @@
 "use client";
 
 import { Clock3, Trash2 } from "lucide-react";
+import type { BackupStatus } from "@/lib/backup";
 import { relativeTime } from "@/lib/format";
 import type { HistoryItem } from "@/lib/storage";
 import type { SearchState } from "@/lib/types";
+import { BackupControls } from "./backup-controls";
 import { Sheet } from "./ui/sheet";
 
 function summarize(state: SearchState): string[] {
@@ -26,6 +28,9 @@ export function HistoryPanel({
   onRun,
   onRemove,
   onClear,
+  onExport,
+  onImport,
+  backupStatus,
 }: {
   open: boolean;
   onClose: () => void;
@@ -34,24 +39,35 @@ export function HistoryPanel({
   onRun: (item: HistoryItem) => void;
   onRemove: (id: string) => void;
   onClear: () => void;
+  onExport: () => void;
+  onImport: (file: File) => void;
+  backupStatus: BackupStatus | null;
 }) {
   return (
     <Sheet
       open={open}
       onClose={onClose}
       title="搜索历史"
-      description="仅保存在当前浏览器的本地存储中"
+      description="仅保存在当前浏览器的本地存储中，可导出备份"
       footer={
-        items.length > 0 ? (
-          <button
-            type="button"
-            onClick={onClear}
-            className="btn btn-ghost h-8 w-full text-xs text-warning"
-          >
-            <Trash2 size={13} />
-            清空全部历史
-          </button>
-        ) : null
+        <div className="space-y-2">
+          <BackupControls
+            onExport={onExport}
+            onImport={onImport}
+            disabled={!hydrated}
+            status={backupStatus}
+          />
+          {items.length > 0 ? (
+            <button
+              type="button"
+              onClick={onClear}
+              className="btn btn-ghost h-8 w-full text-xs text-warning"
+            >
+              <Trash2 size={13} />
+              清空全部历史
+            </button>
+          ) : null}
+        </div>
       }
     >
       {!hydrated ? (

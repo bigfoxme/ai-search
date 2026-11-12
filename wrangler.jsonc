@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ai-search",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    {
+      "pattern": "ds.bigfox.me",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "MOCK_SEARCH": "0",
+    "DEEPSEEK_BASE_URL": "https://api.deepseek.com",
+    "RATE_LIMIT_PER_MINUTE": "20",
+    "LOGIN_RATE_LIMIT_PER_MINUTE": "5",
+    "DAILY_SEARCH_LIMIT": "500",
+    "SEARCH_CACHE_TTL_MS": "300000",
+    "TRUST_CF_CONNECTING_IP": "1"
+  }
+}
